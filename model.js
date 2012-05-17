@@ -106,7 +106,10 @@ var paths_for_word = function (board, word) {
     if (word.length === 0) {
       valid_paths.push(path);
       return;
-    {{name}}// otherwise, try to match each available position against the
+    }
+
+
+    // otherwise, try to match each available position against the
     // first letter of the word, avoiding any positions that are
     // already used by the path.  for each of those matches, descend
     // recursively, passing the remainder of the word, the accumulated
@@ -177,4 +180,3 @@ if (Meteor.is_server) {
                              {player_id: player_id}]});
   });
 }
-
