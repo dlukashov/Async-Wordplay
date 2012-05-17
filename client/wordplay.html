@@ -1,0 +1,128 @@
+<head>
+    <title>Word play!</title>
+</head>
+
+<body>
+    <div id="utils">
+        {{> createRoomModal }}
+    </div>
+    <div id="top" style="width: 100%; height: 80px;">
+        {{> top}}
+    </div>
+    <div id="main">
+        <div id="left">
+            {{> board }}
+        </div>
+        <div id="right">
+            {{> container}}
+        </div>
+    </div>
+</body>
+
+<template name="lobby">
+  <div>
+    {{#if show }}
+    <div id="lobby">
+      {{#if count}}
+      <h1>{{count}} other players are in the lobby:</h1>
+      {{#each waiting }}
+      <div class="player">{{name}}</div>
+      {{/each}}
+      {{/if}}
+      {{!comment}}
+      {{! <div>}}
+       {{! <button id="startgame" class="startgame" >}}
+      {{!  </button>}}
+      {{!</div>}}
+      {{> roomlist}}
+    </div>
+    {{/if}}
+  </div>
+</template>
+
+<template name="scratchpad">
+  {{#if show}}
+  <div id="scratchpad">
+    <input id="scratchpad_input" type="text" />
+    <button name="submit" class="submit">Submit</button>
+  </div>
+  {{/if}}
+</template>
+
+<template name="postgame">
+  <div>
+    {{#if show}}
+    <div id="postgame">
+      <button name="backtolobby" class="lobby">Back to lobby</button>
+    </div>
+    {{/if}}
+  </div>
+</template>
+
+<template name="scores">
+  <div>
+    {{#if show}}
+    <div id="scores">
+      {{#each players}}
+        {{> player }}
+      {{/each}}
+    </div>
+    {{/if}}
+  </div>
+</template>
+
+<template name="player">
+  <div class="player">
+    <div class="header {{winner}}">
+      {{#if name}}
+        {{name}}
+      {{else}}
+        <span class="unnamed">no name</span>
+      {{/if}}
+      <span class="score">{{total_score}}</span>
+      {{#if winner}}
+        <span class="winner_text">Winner!</span>
+      {{/if}}
+    </div>
+    {{> words}}
+  </div>
+</template>
+
+<template name="words">
+  <div class="words">
+    {{#each words}}
+    <div id="word_{{_id}}" class="word {{state}}">
+      <span class="score">
+        {{score}}
+      </span>
+      {{word}}
+    </div>
+    {{/each}}
+  </div>
+</template>
+
+<template name="leaderboard">
+    <ol class="player_list">
+        {{#each player_summaries}}
+            <li><span>Name: {{name}} ...</span></li>
+        {{/each}}
+    </ol>
+</template>
+
+<template name="registration">
+    <div id="registration">
+        <input id="myname" type="text" placeholder="Pick a Name" />
+        <input id="password" type="password" placeholder="Set a Password" />
+        <button name="save_profile" type="submit" class="save_profile">Save Profile</button>
+        <button name="lobby" class="lobby_return">Cancel</button>
+    </div>
+</template>
+
+<template name="login">
+    <div id="login">
+        <input id="myname" type="text" placeholder="Name" />
+        <input id="password" type="password" placeholder="Password" />
+        <button name="login" type="submit" class="login">Login</button>
+        <button name="lobby" class="lobby_return">Cancel</button>
+    </div>
+</template>

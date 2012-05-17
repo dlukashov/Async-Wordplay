@@ -1,0 +1,20 @@
+<template name="top">
+    <div style="float:left">
+        {{#if current_player_name}}
+            <b>Welcome {{current_player_name}}!</b>
+            <button class="logout">Log Out</button>
+        {{/if}}
+    </div>
+    <div style="float:right">
+        {{#if registration}}
+            {{> registration }}
+        {{/if}}
+        {{#if login}}
+            {{> login}}
+        {{/if}}
+        {{#if logged_out}}
+            <button id="register" class="register">Register!</button>
+            <button id="register" class="login">Log In!</button>
+        {{/if}}
+    </div>
+</template>
