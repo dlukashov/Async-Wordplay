@@ -206,8 +206,18 @@ Template.createRoomModal.events = {
     }
 }
 
+/////Room
+
 Template.room.show = function () {
     return Session.get("roomView");
+}
+
+Template.room.events = {
+    'click a#leave': function () {
+        Session.set("roomView", undefined);
+        Meteor.call("leave_room", Session.get("current_player_name"));
+        router.navigate("lobby", {trigger: true, replace: true});
+    }
 }
 
 //////

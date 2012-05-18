@@ -27,6 +27,7 @@ if(Meteor.is_server) {
       , logged_in : { type: Boolean, default: true }
       , last_keepalive : Number
       , date_created : { type: Date, default: Date.now }
+      , _current_room : { type: Schema.ObjectId, ref: 'Room' }
     });
 
     var Player = mongoose.model("Players", Player);
@@ -36,6 +37,7 @@ if(Meteor.is_server) {
       , name : String
       , date_created : { type: Date, default: Date.now }
       , active : { type: Boolean, default: true }
+      , players : [{ type: Schema.ObjectId, ref: 'Player' }]
       , options : {
             timelimit : { type: Number, min: 0 }
           , width : { type: Number, min: 0, max: 16, default: 4 }

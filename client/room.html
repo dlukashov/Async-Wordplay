@@ -1,7 +1,21 @@
 <template name="room">
     {{#if show}}
         {{#with roomInfo}}
-        Welcome to {{name}}
+        Welcome to {{name}}</br>
+        The time limit is: {{options.timelimit}}
+            Players in Room:
+            <ul>
+                {{#each players}}
+                <li> {{name}}</li>
+                {{/each}}
+            </ul>
         {{/with}}
+        <div>
+            <button id="startgame" class="startgame" >Start Game!</button>
+        </div>
+        <a id="leave">Back to Lobby</a>
     {{/if}}
+</template>
+
+<template name="fuckoof">
 </template>

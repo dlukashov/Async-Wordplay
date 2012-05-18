@@ -4,11 +4,14 @@ var Router = Backbone.Router.extend({
     },
 
     room: function (name) {
-        console.log("HI!");
-        var room = Rooms.find( {name: name} ).fetch()[0];
+        var room = Rooms.findOne( {name: name} );
         Session.set("roomView", room._id);
+        Meteor.call("enter_room", room.name, Session.get("current_player_name"));
         Template.room.roomInfo = function () {
             return room;
+        }
+        Template.room.players = function () {
+            return Players.find( {_current_room: room.name}).fetch()
         }
     }
 });

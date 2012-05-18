@@ -75,6 +75,13 @@ Meteor.methods({
         new_room.save(function (err) {
             return err;
         });
+  },
+  enter_room: function (room_name, player_name) {
+        Players.update( {name: player_name}, {$set : {_current_room: room_name}})
+  },
+  leave_room: function (player_name) {
+        Players.update( {name: player_name}, {$unset : {_current_room: 1}})
+
   }
 });
 

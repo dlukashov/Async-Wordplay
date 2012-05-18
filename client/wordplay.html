@@ -24,16 +24,8 @@
     {{#if show }}
     <div id="lobby">
       {{#if count}}
-      <h1>{{count}} other players are in the lobby:</h1>
-      {{#each waiting }}
-      <div class="player">{{name}}</div>
-      {{/each}}
-      {{/if}}
-      {{!comment}}
-      {{! <div>}}
-       {{! <button id="startgame" class="startgame" >}}
-      {{!  </button>}}
-      {{!</div>}}
+      <h1>Welcome to the lobby:</h1>
+      <p> Please select a room to play against other players or any saved games</p>
       {{> roomlist}}
     </div>
     {{/if}}
