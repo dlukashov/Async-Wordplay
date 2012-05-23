@@ -1,88 +1,62 @@
 ////////// Server only logic //////////
 
 Meteor.methods({
-  start_new_game: function (evt) {
-    // create a new game w/ fresh board
-    var game_id = Games.insert({board: new_board(),
-                                clock: 120});
+    start_new_game: function (timelimit, room_name) {
+        // create a new game w/ fresh board
+        var game_id = Games.insert({board: new_board(),
+                                    clock: timelimit});
 
-    // move everyone who is ready in the lobby to the game
-    Players.update({game_id: null, idle: false, name: {$ne: ''}},
-                   {$set: {game_id: game_id}},
-                   {multi: true});
-    // Save a record of who is in the game, so when they leave we can
-    // still show them.
-    var p = Players.find({game_id: game_id},
-                         {fields: {_id: true, name: true}}).fetch();
-    Games.update({_id: game_id}, {$set: {players: p}});
+        // move everyone who is ready in the lobby to the game
+        Players.update({game_id: null, idle: false, _current_room: room_name},
+                       {$set: {game_id: game_id}},
+                       {multi: true});
+        // Save a record of who is in the game, so when they leave we can
+        // still show them.
+        var p = Players.find({game_id: game_id},
+                             {fields: {_id: true, name: true}}).fetch();
+        Games.update({_id: game_id}, {$set: {players: p, room: room_name}});
+
+        console.log(game_id);
+
+        // wind down the game clock
+        var clock = timelimit;
+        var interval = Meteor.setInterval(function () {
+          clock -= 1;
+          Games.update(game_id, {$set: {clock: clock}});
+
+          // end of game
+          if (clock === 0) {
+            // stop the clock
+            Meteor.clearInterval(interval);
+            // declare zero or more winners
+            var scores = {};
+            Words.find({game_id: game_id}).forEach(function (word) {
+              if (!scores[word.player_id])
+                scores[word.player_id] = 0;
+              scores[word.player_id] += word.score;
+            });
+            var high_score = _.max(scores);
+            var winners = [];
+            _.each(scores, function (score, player_id) {
+              Players.update(player_id, {$addToSet: {games: {game_id: game_id, score: score}}});
+              if (score === high_score)
+                winners.push(player_id);
+            });
+
+            Games.update(game_id, {$set: {winners: winners}});
+          }
+        }, 1000);
+
+        return game_id;
+    },
 
 
-    // wind down the game clock
-    var clock = 120;
-    var interval = Meteor.setInterval(function () {
-      clock -= 1;
-      Games.update(game_id, {$set: {clock: clock}});
-
-      // end of game
-      if (clock === 0) {
-        // stop the clock
-        Meteor.clearInterval(interval);
-        // declare zero or more winners
-        var scores = {};
-        Words.find({game_id: game_id}).forEach(function (word) {
-          if (!scores[word.player_id])
-            scores[word.player_id] = 0;
-          scores[word.player_id] += word.score;
-        });
-        var high_score = _.max(scores);
-        var winners = [];
-        _.each(scores, function (score, player_id) {
-          Players.update(player_id, {$addToSet: {games: {game_id: game_id, score: score}}});
-          if (score === high_score)
-            winners.push(player_id);
-        });
-
-        Games.update(game_id, {$set: {winners: winners}});
-      }
-    }, 1000);
-
-    return game_id;
-  },
-
-
-  keepalive: function (player_id) {
+    keepalive: function (player_id) {
     Players.update({_id: player_id},
                   {$set: {last_keepalive: (new Date()).getTime(),
                           idle: false}});
-  },
-  //FIXME: have to actually hash the passwords
-  register_player: function (name, password) {
-        var new_player = new Player();
-        new_player.name = name;
-        new_player.password = password;
-        new_player.save(function (err) {
-            //return err;
-        });
-        return new_player._id
-  },
-  login_player: function (name, password) {
+    }
 
-  },
-  create_new_room: function (name, timelimit) {
-        var new_room = new Room();
-        new_room.name = name;
-        new_room.options.timelimit = timelimit;
-        new_room.save(function (err) {
-            return err;
-        });
-  },
-  enter_room: function (room_name, player_name) {
-        Players.update( {name: player_name}, {$set : {_current_room: room_name}})
-  },
-  leave_room: function (player_name) {
-        Players.update( {name: player_name}, {$unset : {_current_room: 1}})
-
-  }
 });
 
 Meteor.setInterval(function () {

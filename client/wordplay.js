@@ -26,18 +26,6 @@ var create_my_player = function (name) {
       }});
 };
 
-var login_player = function (name, password) {
-    var matched_player = Players.find( {name: name, password: password} ).fetch()
-    if (matched_player.length > 1) {
-        // FIXME: prevent multiple accounts  with the same name and password from being created
-    } else if (matched_player.length === 0) {
-        alert("account not found");
-    } else {
-        Session.set("current_player_name", matched_player[0]["name"])
-        Session.set("current_player_id", matched_player[0]["_id"])
-    }
-};
-
 var set_selected_positions = function (word) {
   var paths = paths_for_word(game().board, word.toUpperCase());
   var in_a_path = [];
@@ -146,11 +134,14 @@ Template.registration.events = {
     'click button.save_profile': function () {
         var name = $('#registration input#myname').val().trim();
         var password = $('#registration input#password').val().trim();
-        Meteor.call('register_player', name, password);
-        Meteor.setTimeout(function () {
-            login_player(name, password)
-        }, 3000);
-        Session.set('register', false);
+        Meteor.call('register_player', name, password, function (error, result) {
+            if (error) {i
+                console.log(error);
+            } else {
+                Session.set("current_player_name", result);
+            };
+        });
+        Session.set('register', undefined);
     },
     'click button.lobby_return': function () {
         Session.set('register', false);
@@ -161,8 +152,15 @@ Template.login.events = {
     'click button.login': function () {
         var name = $('#login input#myname').val().trim();
         var password = $('#login input#password').val().trim();
-        login_player(name, password);
-        Session.set('login', false);
+        Meteor.call('login_player', name, password, function (error, result) {
+            if (error) {
+                alert(error['reason']);
+                console.log(error);
+            } else {
+                Session.set('current_player_name', result);
+                Session.set('login', undefined);
+                }
+        });
     },
     'click button.lobby_return': function () {
         Session.set('login', false);
@@ -199,8 +197,8 @@ Template.createRoomModal.events = {
     },
     'click a#create': function () {
         var newRoomName = $('#newRoomName').val().trim();
-        var timeLimit = parseInt($("input[name=timeLimit]:checked").attr("value"));
-        Meteor.call("create_new_room", newRoomName, timeLimit);
+        var timelimit = parseInt($("input[name=timeLimit]:checked").attr("value"));
+        Meteor.call("create_new_room", newRoomName, timelimit);
         $("createRoomModal").modal("hide");
         Session.set("createRoomModal", false);
     }
@@ -217,6 +215,12 @@ Template.room.events = {
         Session.set("roomView", undefined);
         Meteor.call("leave_room", Session.get("current_player_name"));
         router.navigate("lobby", {trigger: true, replace: true});
+    },
+    'click button#startgame': function () {
+        var timelimit = 120;
+        var room_name = Session.get("roomView");
+        alert(room_name);
+        Meteor.call('start_new_game', timelimit, room_name);
     }
 }
 

@@ -20,16 +20,13 @@
 </body>
 
 <template name="lobby">
-  <div>
     {{#if show }}
     <div id="lobby">
-      {{#if count}}
       <h1>Welcome to the lobby:</h1>
       <p> Please select a room to play against other players or any saved games</p>
       {{> roomlist}}
     </div>
     {{/if}}
-  </div>
 </template>
 
 <template name="scratchpad">
