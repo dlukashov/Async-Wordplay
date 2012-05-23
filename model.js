@@ -1,4 +1,5 @@
 ////////// Shared code (client and server) //////////
+
 Games = new Meteor.Collection('games');
 // { board: ['A','I',...], clock: 60,
 //   players: [{player_id, name}], winners: [player_id] }
@@ -18,6 +19,7 @@ if(Meteor.is_server) {
       , score : { type : Number, min: 0 }
     });
 
+    //Player Schema
     var Player = new Schema({
         _id : String
       , name : String
@@ -30,11 +32,60 @@ if(Meteor.is_server) {
       , _current_room : { type: Schema.ObjectId, ref: 'Room' }
     });
 
+    Player.statics.findAndModify = function (query, sort, doc, options, callback) {
+        return this.collection.findAndModify(query, sort, doc, options, callback);
+    };
+
     var Player = mongoose.model("Players", Player);
+
+    //Player Related Methods
+    Meteor.methods({
+        register_player: function (name, password) {
+        //FIXME: have to actually hash the passwords
+            var new_player = new Player();
+            new_player.name = name;
+            new_player.password = password;
+            new_player.save(function (err) {
+                //return err;
+            });
+            return new_player.name
+        },
+        login_player: function(name, password) {
+            //FIXME update to findAndModify, if and when possible
+            //FIXME use bcrypt library to has passwords
+            Player.update( {name: name, password: password}, {$set: {logged_in: true}}, [], function (err, numAffected) {
+                if (err) {
+                    console.log(err);
+                } else if( numAffected > 1) {
+                    console.log(numAffected);
+                };
+            });
+
+            var logged_in_player = Players.findOne( {name: name, password: password, logged_in: true});
+
+            if (!logged_in_player) {
+                throw new Meteor.Error(404, "Account not found");
+            } else {
+                return logged_in_player;
+            }
+        },
+        logout_player: function (player_id) {
+            Player.update( {_id: player_id}, {$set: {logged_in: false}}, [], function (err, numAffected) {
+                if (err) {
+                    console.log(err);
+                } else if( numAffected > 1) {
+                    console.log(numAffected);
+                };
+            });
+        }
+
+    });
+
 
     var Room = new Schema({
         _id : String
       , name : String
+      , slug: {type: String, set: slugify, }
       , date_created : { type: Date, default: Date.now }
       , active : { type: Boolean, default: true }
       , players : [{ type: Schema.ObjectId, ref: 'Player' }]
@@ -46,6 +97,24 @@ if(Meteor.is_server) {
     });
 
     var Room = mongoose.model("Rooms", Room);
+
+    Meteor.methods({
+        create_new_room: function (name, timelimit) {
+            var new_room = new Room();
+            new_room.name = name;
+            new_room.slug = name;
+            new_room.options.timelimit = timelimit;
+            new_room.save(function (err) {
+                return err;
+            });
+        },
+        enter_room: function (room_name, player_name) {
+            Players.update( {name: player_name}, {$set : {_current_room: room_name}})
+        },
+        leave_room: function (player_name) {
+            Players.update( {name: player_name}, {$unset : {_current_room: 1}})
+        }
+    });
 }
 
 // 6 faces per die, 16 dice.  Q really means Qu.

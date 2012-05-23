@@ -5,12 +5,12 @@
 //////
 
 var player = function () {
-  return Players.findOne(Session.get('player_id'));
+  return Players.findOne({name: Session.get("current_player_name")});
 };
 
 var game = function () {
   var me = player();
-  return me && me.game_id && Games.findOne(me.game_id);
+  return me && me.game_id && Games.findOne({ _id: me.game_id});
 };
 
 var create_my_player = function (name) {
@@ -63,6 +63,13 @@ Template.top.current_player_name = function () {
 
 Template.top.events =  {
     'click button.logout': function () {
+        Meteor.call("logout_player", Session.get("current_player_id"), function (error, result) {
+            if (error) {
+                alert(error);
+            } else {
+                alert(result);
+            }
+        });
         Session.set("current_player_name", undefined);
         Session.set("current_player_id", undefined);
     },
@@ -157,7 +164,9 @@ Template.login.events = {
                 alert(error['reason']);
                 console.log(error);
             } else {
-                Session.set('current_player_name', result);
+                console.log(result);
+                Session.set('current_player_name', result.name);
+                Session.set('current_player_id', result.id);
                 Session.set('login', undefined);
                 }
         });
@@ -385,7 +394,7 @@ Meteor.startup(function () {
         Meteor.subscribe('rooms');
     }
 
-    if (Session.get('player_id')) {
+    if (Session.get('current_player_name')) {
       var me = player();
       if (me && me.game_id) {
         Meteor.subscribe('games', me.game_id);
