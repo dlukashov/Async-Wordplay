@@ -6,7 +6,8 @@
         {{#if rooms}}
         <ul style="list-style:none;">
             {{#each rooms}}
-            <li><a class="room" id="{{name}}" href="#">{{name}}</a></li>
+
+            <li><a class="room" id="{{slug}}" href="javascript:router.navigate('room/{{slug}}', {trigger: false, replace: true});">{{name}}</a></li>
             {{/each}}
         </ul>
         {{/if}}

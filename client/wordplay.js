@@ -5,12 +5,11 @@
 //////
 
 var player = function () {
-  return Players.findOne({name: Session.get("current_player_name")});
+    return Players.findOne({name: Session.get("current_player_name")});
 };
 
 var game = function () {
-  var me = player();
-  return me && me.game_id && Games.findOne({ _id: me.game_id});
+    return Games.findOne({ _id: Session.get("current_game_id")});
 };
 
 var create_my_player = function (name) {
@@ -54,7 +53,6 @@ var clear_selected_positions = function () {
 Session.set('register', false);
 //////
 ////// lobby template: shows everyone not currently playing, and
-
 ////// offers a button to start a fresh game.
 //////
 Template.top.current_player_name = function () {
@@ -187,7 +185,7 @@ Template.roomlist.events = {
     },
     'click a.room': function (evt) {
         var roomName = evt.target.id;
-        router.navigate("room/" + roomName, {trigger: true, replace: true});
+        //router.navigate("room/" + roomName, {trigger: true, replace: true});
     }
 }
 
@@ -229,7 +227,13 @@ Template.room.events = {
         var timelimit = 120;
         var room_name = Session.get("roomView");
         alert(room_name);
-        Meteor.call('start_new_game', timelimit, room_name);
+        Meteor.call('start_new_game', timelimit, room_name, function (error, result) {
+            if (error) {
+
+            } else if (result) {
+                Session.set("current_game_id", result);
+            }
+        });
     }
 }
 
