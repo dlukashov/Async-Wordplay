@@ -108,8 +108,16 @@ if(Meteor.is_server) {
                 return err;
             });
         },
-        enter_room: function (room_name, player_name) {
-            Players.update( {name: player_name}, {$set : {_current_room: room_name}})
+        enter_room: function (room_slug, player_name) {
+            Players.update( {name: player_name}, {$set : {_current_room: room_slug}})
+
+            var room = Rooms.findOne({slug: room_slug});
+            if (!room) {
+                throw new Meteor.Error(404, "Room could not be found");
+                return false;
+            } else {
+                return room;
+            }
         },
         leave_room: function (player_name) {
             Players.update( {name: player_name}, {$unset : {_current_room: 1}})

@@ -98,7 +98,7 @@ Template.top.logged_out = function () {
 
 Template.lobby.show = function () {
   // only show lobby if we're not in a game
-  return !game() && !Session.get("roomView");
+  return !game() && !Session.get("current_room");
 };
 
 Template.lobby.waiting = function () {
@@ -211,21 +211,34 @@ Template.createRoomModal.events = {
     }
 }
 
+var enter_room = function (slug) {
+    Meteor.call("enter_room", slug, Session.get("current_player_name"), function (error, result) {
+        if (error) {
+            console.log(error);
+        } else if (result) {
+            Session.set("current_room", result);
+        }
+    });
+}
 /////Room
 
-Template.room.show = function () {
-    return Session.get("roomView");
+Template.room.room = function () {
+    return Session.get("current_room");
+}
+
+Template.room.players = function () {
+    return Players.find( {_current_room: Session.get("current_room").slug}).fetch();
 }
 
 Template.room.events = {
     'click a#leave': function () {
-        Session.set("roomView", undefined);
+        Session.set("current_room", undefined);
         Meteor.call("leave_room", Session.get("current_player_name"));
         router.navigate("lobby", {trigger: true, replace: true});
     },
     'click button#startgame': function () {
         var timelimit = 120;
-        var room_name = Session.get("roomView");
+        var room_name = Session.get("current_room").name;
         alert(room_name);
         Meteor.call('start_new_game', timelimit, room_name, function (error, result) {
             if (error) {
